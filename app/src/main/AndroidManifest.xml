@@ -24,5 +24,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="activity.NewsDetailActivity"/>
+
     </application>
 </manifest>

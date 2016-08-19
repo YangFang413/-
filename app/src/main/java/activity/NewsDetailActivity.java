@@ -1,10 +1,13 @@
 package activity;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.view.Window;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 
@@ -37,24 +40,21 @@ public class NewsDetailActivity extends Activity implements View.OnClickListener
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.news_details);
 
-        // 初始化各控件
+        // 初始化
         backButton = (Button) findViewById(R.id.back_button);
-        isLikeButton = (Button) findViewById(R.id.favorite_button);
+        isLikeButton = (Button) findViewById(R.id.like_button);
         newsDetails = (WebView) findViewById(R.id.news_details);
+        db = ZhihuDB.getInstance(this);
 
         // 为按钮绑定监听器
         backButton.setOnClickListener(this);
         isLikeButton.setOnClickListener(this);
 
         String text = getIntent().getStringExtra("response");
-        try {
-            newsDetails.loadData(formatString(text), "text/html", "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
+        newsDetails.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN); // 设置图片以单列显示，不占用别的位置
+        newsDetails.loadDataWithBaseURL(getApplicationContext().getFilesDir() + "/style.css",
+                text, "text/html", "utf-8", null);
     }
-
 
     @Override
     public void onClick(View view) {
@@ -63,23 +63,24 @@ public class NewsDetailActivity extends Activity implements View.OnClickListener
                 Intent i = new Intent(NewsDetailActivity.this, MainActivity.class);
                 startActivity(i);
                 break;
-            case R.id.favorite_button:
+            case R.id.like_button:
                 flag++;
+                int id = getIntent().getIntExtra("id", 0);
+                ContentValues values = new ContentValues();
                 if (flag % 2 == 0){
-
+                    values.clear();
+                    values.put("islike", 0);
+                    db.writeIsLike(id, values);
+                    isLikeButton.setBackgroundResource(R.mipmap.like_white);
                 } else {
-
+                    values.clear();
+                    values.put("islike", 1);
+                    db.writeIsLike(id, values);
+                    isLikeButton.setBackgroundResource(R.mipmap.like_red);
                 }
                 break;
             default:
                 break;
         }
-    }
-
-    // 解析从服务器端返回的HTML数据
-    private String formatString(String data) throws UnsupportedEncodingException {
-        String s = "";
-        s = URLEncoder.encode(data, "utf-8");
-        return s;
     }
 }

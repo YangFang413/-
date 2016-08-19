@@ -1,15 +1,19 @@
 package utility;
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import database.ZhihuDB;
 import model.News;
@@ -26,7 +30,6 @@ public class ParseUtility {
         if (!TextUtils.isEmpty(response)){
             JSONObject jo = new JSONObject(response);
             String date = jo.getString("date");
-            Log.d("ParseUtility-1", jo.getString("date"));
             JSONArray jsonArray = jo.getJSONArray("stories");
             for (int i=0; i < jsonArray.length(); i++){
                 News news = new News();
@@ -44,11 +47,40 @@ public class ParseUtility {
     }
 
     // 解析服务器返回的HTML类型的新闻详情数据
-    public synchronized static String parseNewsHTMLResponse(String response) throws JSONException {
+    public synchronized static String parseNewsDetailJSONResponse(String response, final Context context) throws JSONException {
         String data = "";
+        String cssUrl = "";
         if (! TextUtils.isEmpty(response)){
             JSONObject jo = new JSONObject(response);
             data = jo.getString("body");
+            String[] csses = jo.getJSONArray("css").get(0).toString().split("\"");
+            cssUrl = csses[0];
+            HttpUtil.sendHttpRequest(cssUrl, new HttpCallBackListener() {
+                @Override
+                public void onFinish(String response, Bitmap bitmap) {
+                    try {
+                        File file = new File(context.getFilesDir(), "style.css");
+                        if (file.exists()){
+                            return;
+                        } else {
+                            FileOutputStream outputStream = new FileOutputStream(file);
+                            byte[] b = response.getBytes();
+                            outputStream.write(b);
+                            outputStream.close();
+                        }
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
+
         }
         return data;
     }

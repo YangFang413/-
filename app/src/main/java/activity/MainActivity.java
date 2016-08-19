@@ -75,19 +75,20 @@ public class MainActivity extends Activity {
         newsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                News news = newsList.get(position);
+                final News news = newsList.get(position);
                 String address = "http://news-at.zhihu.com/api/4/news/" + news.getId();
                 HttpUtil.sendHttpRequest(address, new HttpCallBackListener() {
                     @Override
                     public void onFinish(String response, Bitmap bitmap) {
                         String data = null;
                         try {
-                            data = ParseUtility.parseNewsHTMLResponse(response);
+                            data = ParseUtility.parseNewsDetailJSONResponse(response, getApplicationContext());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                         Intent intent = new Intent(MainActivity.this, NewsDetailActivity.class);
                         intent.putExtra("response", data);
+                        intent.putExtra("id", news.getId());
                         startActivity(intent);
                     }
 

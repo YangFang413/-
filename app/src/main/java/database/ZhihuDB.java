@@ -77,4 +77,9 @@ public class ZhihuDB {
         }
         return list;
     }
+
+    // 从数据库中查询和设置是否收藏
+    public void writeIsLike(int id, ContentValues values){
+        db.update("news", values, "id = ?", new String[]{String.valueOf(id)});
+    }
 }
