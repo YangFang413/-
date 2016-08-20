@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.view.Window;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -52,10 +53,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.homepage);
 
         // 获取各个控件的实例
-        dateText = (TextView) findViewById(R.id.date);
+        dateText = (TextView) findViewById(R.id.name);
         favorite_button = (Button) findViewById(R.id.favorite_button);
         refreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
 
+        // 点击收藏按钮启动收藏活动
         favorite_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,6 +66,7 @@ public class MainActivity extends Activity {
             }
         });
 
+        // 显示ListView新闻列表
         db = ZhihuDB.getInstance(this);
         newsList = db.loadNews();
         if (newsList.size() == 0){
@@ -99,6 +102,25 @@ public class MainActivity extends Activity {
                 });
             }
         });
+
+        // 下拉刷新的实现
+        refreshLayout.setColorSchemeResources(android.R.color.holo_blue_light,
+                android.R.color.holo_red_light,android.R.color.holo_orange_light,
+                android.R.color.holo_green_light);  // 设置加载圈颜色，最多四种
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshLayout.setRefreshing(true);  // 显示刷新进度条
+                (new Handler()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        refreshLayout.setRefreshing(false);
+                        newsList = initData();
+                        newsLoadAdapter.notifyDataSetChanged();
+                    }
+                }, 3000);  //开启线程进行操作，设置延迟3s显示
+            }
+        });
     }
 
     // 如果从数据库中获取到的数据为空，那么访问网络获取当日的新闻数据
@@ -123,5 +145,10 @@ public class MainActivity extends Activity {
         });
         list = db.loadNews();
         return list;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }
