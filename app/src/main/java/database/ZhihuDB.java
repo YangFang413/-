@@ -41,13 +41,28 @@ public class ZhihuDB {
     // 将News的实例存储到数据库中
     public void saveNews(News news){
         if (news != null){
-            ContentValues values = new ContentValues();
-            values.put("id", news.getId());
-            values.put("title", news.getTitle());
-            values.put("imageurl", news.getImageUrl());
-            values.put("date", news.getDate());
-            values.put("islike", 0);
-            db.insert("news", null, values);
+            if (queryId(news) == false) {
+                ContentValues values = new ContentValues();
+                values.put("id", news.getId());
+                values.put("title", news.getTitle());
+                values.put("imageurl", news.getImageUrl());
+                values.put("date", news.getDate());
+                values.put("islike", 0);
+                db.insert("news", null, values);
+            }
+        }
+    }
+
+    // 从数据库查询新闻Id
+    private boolean queryId(News news){
+        Cursor cursor = db.query("news", null, "id = ?", new String[]{String.valueOf(news.getId())}, null, null, null);
+        List<News> list = handleCursor(cursor);
+        if (list.size() != 0){
+            cursor.close();
+            return true; // 数据库已有该条新闻记录
+        } else {
+            cursor.close();
+            return false; // 数据库没有该条新闻记录
         }
     }
 
@@ -57,12 +72,20 @@ public class ZhihuDB {
         Calendar calendar = Calendar.getInstance();
         int mYear = calendar.get(Calendar.YEAR);
         int mMonth = calendar.get(Calendar.MONTH) + 1;
-        String month = "";
+        String month;
         if (mMonth < 10){
             month = "0" + String.valueOf(mMonth);
+        } else{
+            month = String.valueOf(mMonth);
         }
+        String day;
         int mDay = calendar.get(Calendar.DAY_OF_MONTH);
-        String date = String.valueOf(mYear) + month + String.valueOf(mDay);
+        if (mDay < 10){
+            day = "0" + String.valueOf(mDay);
+        } else {
+            day = String.valueOf(mDay);
+        }
+        String date = String.valueOf(mYear) + month + day;
         Cursor cursor = db.query("news", null, "date = ?", new String[]{date}, null, null, null);
         list = handleCursor(cursor);
         return list;
@@ -82,18 +105,18 @@ public class ZhihuDB {
     }
 
     // 对数据库中查询到的数据进行处理
-    public List<News> handleCursor (Cursor cursor){
+    public List<News> handleCursor(Cursor cursor){
         List<News> list = new ArrayList<News>();
-        if (cursor.moveToFirst()){
-            do {
-                News news = new News();
-                news.setId(cursor.getInt(cursor.getColumnIndex("id")));
-                news.setImageUrl(cursor.getString(cursor.getColumnIndex("imageurl")));
-                news.setTitle(cursor.getString(cursor.getColumnIndex("title")));
-                news.setDate(cursor.getString(cursor.getColumnIndex("date")));
-                news.setIsLike(cursor.getInt(cursor.getColumnIndex("islike")));
-                list.add(news);
-            } while (cursor.moveToNext());
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()){
+            News news = new News();
+            news.setId(cursor.getInt(cursor.getColumnIndex("id")));
+            news.setImageUrl(cursor.getString(cursor.getColumnIndex("imageurl")));
+            news.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+            news.setDate(cursor.getString(cursor.getColumnIndex("date")));
+            news.setIsLike(cursor.getInt(cursor.getColumnIndex("islike")));
+            list.add(news);
+            cursor.moveToNext();
         }
         cursor.close();
         return list;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="100dp"
     android:orientation="horizontal"
     android:layout_margin="10dp"
     android:background="@drawable/bg_listview">
@@ -10,6 +10,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_margin="10dp"
+        android:src="@mipmap/ic_launcher"
         android:id="@+id/news_image"
         />
 
@@ -17,6 +18,8 @@
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:id="@+id/news_title"
+        android:textColor="#000000"
+        android:text="今天是2016年8月16号，这是我第一条新闻"
         android:layout_margin="10dp"
         android:textSize="16sp"
         android:gravity="center_vertical"

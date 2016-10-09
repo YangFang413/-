@@ -3,7 +3,6 @@ package adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +13,6 @@ import android.widget.TextView;
 
 import com.yf.myzhihu.R;
 
-import org.json.JSONException;
-
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 
 import model.News;
@@ -33,17 +27,20 @@ import utility.HttpUtil;
 public class NewsLoadAdapter extends ArrayAdapter<News> {
 
     private int resourceId; // 布局文件的id
+    private List<News> list;
 
     public NewsLoadAdapter(Context context, int resource, List<News> objects) {
         super(context, resource, objects);
         resourceId = resource;
+        list = objects;
     }
 
     // 每个子项在滚动到屏幕内的时候调用。
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        final News news = getItem(position); // 获取当前位置的News对象
+        News news = getItem(position); // 获取当前位置的News对象
+        // News news = list.get(position);
         View view;
         final ViewHolder viewHolder;
         if (convertView == null){
